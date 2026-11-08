@@ -15,12 +15,15 @@ dependencyResolutionManagement {
 
 rootProject.name = "My Application"
 include(":app")
-include(":labs:layouts")
 include(":labs:food-ordering")
 include(":labs:announcements")
 include(":labs:product-store")
 include(":labs:contact-directory")
+include(":labs:background-sync")
 include(":labs:reading-list")
 include(":labs:comments-api")
-include(":labs:background-sync")
-include(":labs:fragments")
+include(":labs:feedback-collector")
+include(":labs:tip-calculator")
+include(":labs:shopping-cart")
+include(":labs:firebase-auth")
+include(":labs:event-registration")

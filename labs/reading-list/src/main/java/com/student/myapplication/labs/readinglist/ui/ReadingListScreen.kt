@@ -2,7 +2,6 @@ package com.student.myapplication.labs.readinglist.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,17 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,11 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.student.myapplication.labs.readinglist.data.Book
 import com.student.myapplication.labs.readinglist.data.BookDatabase
 import com.student.myapplication.labs.readinglist.data.SortPreferences
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalCoroutinesApi::class)
 @Composable
 fun ReadingListScreen() {
     val context = LocalContext.current
@@ -49,159 +40,117 @@ fun ReadingListScreen() {
     val bookDao = remember { db.bookDao() }
     val scope = rememberCoroutineScope()
 
-    val currentSortOrder by remember(context) {
+    val sortOrder by remember(context) {
         SortPreferences.getSortOrder(context)
     }.collectAsState(initial = SortPreferences.SORT_NEWEST)
 
-    val booksList by remember(currentSortOrder) {
-        if (currentSortOrder == SortPreferences.SORT_TITLE) {
+    val booksList by remember(sortOrder) {
+        if (sortOrder == SortPreferences.SORT_TITLE) {
             bookDao.getAllBooksTitleAsc()
         } else {
             bookDao.getAllBooksNewestFirst()
         }
     }.collectAsState(initial = emptyList())
 
-    var bookTitle by remember { mutableStateOf("") }
-    var bookAuthor by remember { mutableStateOf("") }
+    var titleInput by remember { mutableStateOf("") }
+    var authorInput by remember { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Reading List (Room + DataStore)") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Reading List App",
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        OutlinedTextField(
+            value = titleInput,
+            onValueChange = { titleInput = it },
+            label = { Text("Book Title") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = authorInput,
+            onValueChange = { authorInput = it },
+            label = { Text("Author Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(
+            onClick = {
+                if (titleInput.isNotBlank() && authorInput.isNotBlank()) {
+                    val book = Book(title = titleInput, author = authorInput)
+                    scope.launch {
+                        bookDao.insertBook(book)
+                        titleInput = ""
+                        authorInput = ""
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Form to Add Book
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Add Book to Library",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = bookTitle,
-                        onValueChange = { bookTitle = it },
-                        label = { Text("Book Title") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = bookAuthor,
-                        onValueChange = { bookAuthor = it },
-                        label = { Text("Author Name") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+            Text("Add Book")
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = {
+                    scope.launch {
+                        SortPreferences.saveSortOrder(context, SortPreferences.SORT_NEWEST)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Sort: Newest")
+            }
+            OutlinedButton(
+                onClick = {
+                    scope.launch {
+                        SortPreferences.saveSortOrder(context, SortPreferences.SORT_TITLE)
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Sort: Title A-Z")
+            }
+        }
+
+        HorizontalDivider()
+
+        Text(text = "Books Count: ${booksList.size}")
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(booksList, key = { it.id }) { book ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = book.title, style = MaterialTheme.typography.titleMedium)
+                        Text(text = "Author: ${book.author}", style = MaterialTheme.typography.bodyMedium)
+                    }
                     Button(
                         onClick = {
-                            if (bookTitle.isNotBlank() && bookAuthor.isNotBlank()) {
-                                val newBook = Book(title = bookTitle, author = bookAuthor)
-                                scope.launch {
-                                    bookDao.insertBook(newBook)
-                                    bookTitle = ""
-                                    bookAuthor = ""
-                                }
+                            scope.launch {
+                                bookDao.deleteBook(book)
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth()
+                        }
                     ) {
-                        Text("Save to Room DB")
+                        Text("Delete")
                     }
                 }
-            }
-
-            // Sorting Selection (Persisted in DataStore)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Books (${booksList.size})",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = currentSortOrder == SortPreferences.SORT_NEWEST,
-                        onClick = {
-                            scope.launch {
-                                SortPreferences.saveSortOrder(context, SortPreferences.SORT_NEWEST)
-                            }
-                        },
-                        label = { Text("Newest") }
-                    )
-                    FilterChip(
-                        selected = currentSortOrder == SortPreferences.SORT_TITLE,
-                        onClick = {
-                            scope.launch {
-                                SortPreferences.saveSortOrder(context, SortPreferences.SORT_TITLE)
-                            }
-                        },
-                        label = { Text("Title A-Z") }
-                    )
-                }
-            }
-
-            // Book List
-            if (booksList.isEmpty()) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "No books in list. Add a book using the form above.",
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(booksList, key = { it.id }) { book ->
-                        BookRowItem(
-                            book = book,
-                            onDelete = {
-                                scope.launch {
-                                    bookDao.deleteBook(book)
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun BookRowItem(book: Book, onDelete: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = book.title, style = MaterialTheme.typography.titleMedium)
-                Text(text = "By ${book.author}", style = MaterialTheme.typography.bodyMedium)
-            }
-            IconButton(onClick = onDelete) {
-                Text("🗑️", style = MaterialTheme.typography.titleMedium)
+                HorizontalDivider()
             }
         }
     }

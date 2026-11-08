@@ -1,28 +1,33 @@
-# Exam-Ready Android Practical Lab Collection
+# 24CS2021 Mobile Application Development Practice Lab Collection
 
-A modular, exam-ready collection of complete Android mini-applications built with Kotlin and Jetpack Compose. Each module under `labs/` represents a real practical scenario that can be used directly or quickly adapted to match an examination question.
+A complete, beginner-friendly collection of 12 practice lab applications matching the `24CS2021 Mobile Application Development` examination paper.
+
+Each module inside `labs/` represents a self-contained, independent practical exam solution written in clean, simple Kotlin and Jetpack Compose.
 
 ---
 
-## 1. Project Architecture & Structure
+## 1. Project Architecture
 
-This repository uses a Gradle multi-module architecture where `:app` acts as the single runnable host application and each directory under `labs/` is an independent Android library module (`com.android.library`).
+This repository uses a multi-module Gradle structure where `:app` acts as the single runnable application host, and each module under `labs/` is an independent Android library (`com.android.library`).
 
 ```text
 MyApplication/
-├── app/                       # Main runnable Android application
+├── app/                          # Main runnable Android host application
 │   └── src/main/java/.../
-│       └── MainActivity.kt    # Project Switcher & Host Activity
+│       └── MainActivity.kt       # Practice Question Switcher
 ├── labs/
-│   ├── layouts/               # Basic Compose Layouts & UI elements
-│   ├── food-ordering/         # Explicit Intent, ActivityExtras, Order summary
-│   ├── announcements/         # Dynamic UI feed with multiple card types
-│   ├── product-store/         # Jetpack Compose Navigation & Arguments
-│   ├── contact-directory/     # LazyColumn & Snackbar selection
-│   ├── reading-list/          # Room DB + DataStore Sorting Preference (Most Important)
-│   ├── comments-api/          # Retrofit + REST API + Gson
-│   ├── background-sync/       # WorkManager One-Time & Periodic Tasks
-│   └── fragments/             # AndroidX FragmentContainerView & Transactions
+│   ├── food-ordering/            # Question 1: Food Ordering (Explicit Intent & Extras)
+│   ├── announcements/            # Question 2: Announcement Feed (Dynamic UI)
+│   ├── product-store/            # Question 3 & 6: Product Store (Navigation Compose)
+│   ├── contact-directory/        # Question 4: Contact Directory (LazyColumn & Snackbar)
+│   ├── background-sync/          # Question 5: Background Sync (WorkManager Tasks)
+│   ├── reading-list/             # Question 7: Reading List (Room DB & DataStore Sort)
+│   ├── comments-api/             # Question 8: Comments List (REST API & Retrofit)
+│   ├── feedback-collector/       # Question 9: Feedback Collector (Real-Time List)
+│   ├── tip-calculator/           # Question 10: Tip Calculator (Logic & Unit Tests)
+│   ├── shopping-cart/            # Question 11: Shopping Cart (Quantities & Discounts)
+│   ├── firebase-auth/            # Question 12: User Authentication (Login & Home)
+│   └── event-registration/       # Question 13: Event Registration (Forms & List)
 ├── gradle/
 │   └── libs.versions.toml
 ├── settings.gradle.kts
@@ -32,114 +37,69 @@ MyApplication/
 
 ---
 
-## 2. Practical Scenarios Included
+## 2. Practice Exam Questions Included
 
-### A. Reading List (`:labs:reading-list`) — *Primary Data & Storage Lab*
-- **Scenario**: Personal reading list manager.
-- **Technologies**: Room Database, Preferences DataStore, Kotlin Flow, Compose `LazyColumn`.
-- **Features**:
-  1. Add a book with `title` and `author`.
-  2. Persistent storage using Room database (`Book` Entity & `BookDao`).
-  3. Delete book item with delete button.
-  4. Toggle sorting between **Title (A-Z)** and **Newest First**.
-  5. Persistence of sorting selection using **DataStore Preferences**.
-  6. Automatic UI updates via `Flow` when database or sorting preferences change.
+### Question 1: Food Ordering App (`:labs:food-ordering`)
+- **Concepts**: Explicit Intents, Data passing between Activities, Order summary screen.
+- **Implementation**: Food menu checkboxes, total calculation, launching `OrderSummaryActivity` via explicit `Intent` with item and price extras.
 
-### B. Food Ordering (`:labs:food-ordering`) — *Intents & Activity Extras Lab*
-- **Scenario**: Food menu ordering system.
-- **Technologies**: Explicit Intent, Activity Extras, Compose UI, Animations.
-- **Features**: Menu with checkboxes, total price calculation, passing selected items, total price, and customer note via explicit `Intent` to `OrderSummaryActivity`, and order confirmation animation.
+### Question 2: Announcement Feed App (`:labs:announcements`)
+- **Concepts**: Dynamic UI generation from data source, `LazyColumn`.
+- **Implementation**: Dynamic list handling Plain Text Notices, Urgent Alerts (`[URGENT]`), and Action Items with interactive acknowledgment buttons.
 
-### C. Announcements (`:labs:announcements`) — *Dynamic UI & Data Sources Lab*
-- **Scenario**: Campus announcement feed.
-- **Technologies**: Dynamic UI rendering, `LazyColumn`, Reusable Card Composables.
-- **Features**: Normal, Urgent (highlighted), Icon, and Action announcements with interactive callback buttons.
+### Question 3 & 6: Product Store App (`:labs:product-store`)
+- **Concepts**: Navigation Compose, Screen Arguments, Back Navigation.
+- **Implementation**: Product Catalog screen (name, price) navigating to Product Detail screen passing `productId` argument.
 
-### D. Product Store (`:labs:product-store`) — *Navigation Compose Lab*
-- **Scenario**: E-commerce product catalog.
-- **Technologies**: `NavHost`, `NavController`, Composable routes, Navigation Arguments.
-- **Features**: Product catalog list screen, details screen receiving `productId` argument, back navigation.
+### Question 4: Contact Directory App (`:labs:contact-directory`)
+- **Concepts**: `LazyColumn`, Reusable Composables, `Snackbar`.
+- **Implementation**: Scrollable list of employees (name, designation, phone) displaying selected employee name in a Snackbar on click.
 
-### E. Contact Directory (`:labs:contact-directory`) — *Lists & Feedback Lab*
-- **Scenario**: Employee contact list.
-- **Technologies**: `LazyColumn`, Reusable Rows, `SnackbarHostState`.
-- **Features**: Scrollable list displaying name, designation, and phone number, with Snackbar notifications on click.
+### Question 5: Background Sync App (`:labs:background-sync`)
+- **Concepts**: WorkManager, Periodic Tasks, Work Status.
+- **Implementation**: "Start Sync" and "Cancel Sync" buttons running a background `CoroutineWorker` and observing work state (`ENQUEUED`, `RUNNING`, `SUCCEEDED`, `CANCELLED`).
 
-### F. Comments App (`:labs:comments-api`) — *REST API & Retrofit Lab*
-- **Scenario**: Live comment viewer.
-- **Technologies**: Retrofit 2, Gson Converter, Coroutines, REST API.
-- **Features**: Requests `https://jsonplaceholder.typicode.com/comments`, parses JSON, displays loading indicator, error state with Retry button, empty state, and list of comments.
+### Question 7: Reading List App (`:labs:reading-list`)
+- **Concepts**: Room Database, DataStore Preferences, Flow.
+- **Implementation**: Book creation, Room persistent storage, delete action, and sorting toggle ("Title A-Z" vs "Newest First") persisted across app restarts via DataStore.
 
-### G. Background Sync (`:labs:background-sync`) — *WorkManager Lab*
-- **Scenario**: Background data synchronization.
-- **Technologies**: WorkManager, `CoroutineWorker`.
-- **Features**: Triggers One-Time sync work and Periodic sync work (respecting 15-minute minimum interval), observes task status (`WorkInfo`), and cancels unique work.
+### Question 8: Comments List App (`:labs:comments-api`)
+- **Concepts**: Retrofit, REST API, JSON Parsing, Loading State.
+- **Implementation**: Requests `https://jsonplaceholder.typicode.com/comments` using Retrofit, rendering progress indicator and list of names and emails.
 
-### H. Compose Layouts (`:labs:layouts`) — *UI Fundamentals Lab*
-- **Scenario**: Interactive layout playground.
-- **Technologies**: Compose Layouts, Modifiers, State.
-- **Features**: Text, Button, TextField, Column, Row, Box, Padding, Arrangement, and Alignment.
+### Question 9: Feedback Collector App (`:labs:feedback-collector`)
+- **Concepts**: State Management, Form Inputs, Real-Time List.
+- **Implementation**: Student name field, feedback comment field, Submit button, and real-time updating list displaying timestamps.
 
-### I. Fragments (`:labs:fragments`) — *Legacy Interop & Dynamic UI Lab*
-- **Scenario**: AndroidX Fragment manager.
-- **Technologies**: AndroidX `FragmentManager`, `FragmentContainerView`, `ComposeView`.
-- **Features**: Adding, replacing, and removing `DemoFragment` dynamically inside Compose using `AndroidView`.
+### Question 10: Tip Calculator App (`:labs:tip-calculator`)
+- **Concepts**: Logic Separation, Unit Testing (JUnit).
+- **Implementation**: Bill amount input, 10%/15%/20% tip buttons, calculation logic separated in `TipCalculator.kt` with passing JUnit tests.
+
+### Question 11: Shopping Cart App (`:labs:shopping-cart`)
+- **Concepts**: Quantity Selectors, Discount Codes, Logic Testing.
+- **Implementation**: Product list with `+` and `-` quantity controls (never below 0), subtotal calculation, discount code `SAVE10` (10% off), with unit tests in `CartCalculatorTest.kt`.
+
+### Question 12: User Authentication App (`:labs:firebase-auth`)
+- **Concepts**: Auth Flow, Protected Screens, Access Restriction.
+- **Implementation**: Login/Register screen with email & password fields, redirecting authenticated users to protected Home screen with Logout functionality.
+
+### Question 13: Event Registration App (`:labs:event-registration`)
+- **Concepts**: Dropdowns, Real-Time Records, Count Summaries.
+- **Implementation**: Name, email, event dropdown (Hackathon, Workshop, Quiz), real-time list, and total registration counter at top.
 
 ---
 
-## 3. Switching Between Scenarios in `MainActivity`
+## 3. Running a Specific Question in `MainActivity`
 
-Each lab module exposes a public root composable (e.g. `ReadingListApp()`, `FoodOrderingApp()`, `CommentsApiApp()`).
+In `MainActivity.kt`:
 
-In `MainActivity.kt`, you can switch between applications in two ways:
-
-1. **At Runtime (Interactive Dropdown)**:
-   Run the app as-is and select the desired practical scenario from the top dropdown menu.
-
-2. **Direct Submission Mode (Exam Ready)**:
-   In `MainActivity.kt`, call the exact app composable directly inside `setContent`:
-
-```kotlin
-setContent {
-    MyApplicationTheme {
-        ReadingListApp() // Directly renders the Reading List App
-    }
-}
-```
+1. **Runtime Selector**: Select any Question 1–13 from the top dropdown menu.
+2. **Direct Submission**: Uncomment your target question's root composable (e.g. `FoodOrderingApp()`, `TipCalculatorApp()`, `ReadingListApp()`) directly inside `setContent`.
 
 ---
 
-## 4. Adapting a Scenario for an Examination Question
+## 4. Running Unit Tests
 
-To adapt an existing scenario to a new question (e.g., converting **Reading List** into a **Student Records** app):
-
-1. **Entity**: Rename `Book.kt` to `Student.kt` and change fields (e.g. `name`, `rollNo`, `gpa`).
-2. **DAO**: Update `BookDao.kt` SQL queries to query student records (e.g. `SELECT * FROM students ORDER BY rollNo ASC`).
-3. **Database**: Update `@Database(entities = [Student::class], ...)` in `BookDatabase.kt`.
-4. **UI**: Update input fields in `ReadingListScreen.kt` to accept student name and roll number.
-
----
-
-## 5. Submitting a Clean Single-Project Application
-
-If your examination requires submitting ONLY the Reading List module without extra lab modules:
-
-1. Open `settings.gradle.kts` and keep only `:app` and `:labs:reading-list`:
-   ```kts
-   include(":app")
-   include(":labs:reading-list")
-   ```
-2. Open `app/build.gradle.kts` and keep only `:labs:reading-list` in `dependencies`:
-   ```kts
-   implementation(project(":labs:reading-list"))
-   ```
-3. Open `MainActivity.kt` and render `ReadingListApp()`:
-   ```kotlin
-   setContent {
-       MyApplicationTheme {
-           ReadingListApp()
-       }
-   }
-   ```
-4. Delete the unused directories under `labs/` (`layouts`, `food-ordering`, etc.).
-5. Build and run: `.\gradlew.bat assembleDebug`
+Run unit tests for logic-based questions (Questions 10 & 11):
+- **Tip Calculator Test**: `.\gradlew.bat :labs:tip-calculator:test`
+- **Shopping Cart Test**: `.\gradlew.bat :labs:shopping-cart:test`

@@ -12,9 +12,9 @@ class SyncWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        Log.d("SyncWorker", "Background sync task started...")
-        delay(2000)
-        Log.d("SyncWorker", "Background sync task completed successfully.")
+        Log.d("SyncWorker", "Work started...")
+        delay(1000) // 1 second fast execution
+        Log.d("SyncWorker", "Work finished!")
         return Result.success()
     }
 }

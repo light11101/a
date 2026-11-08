@@ -1,9 +1,7 @@
 package com.student.myapplication.labs.commentsapi.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,14 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,129 +28,82 @@ import com.student.myapplication.labs.commentsapi.data.Comment
 import com.student.myapplication.labs.commentsapi.network.RetrofitClient
 import kotlinx.coroutines.launch
 
-sealed interface CommentsUiState {
-    object Loading : CommentsUiState
-    data class Success(val comments: List<Comment>) : CommentsUiState
-    data class Error(val message: String) : CommentsUiState
-    object Empty : CommentsUiState
+sealed interface CommentsState {
+    object Loading : CommentsState
+    data class Success(val list: List<Comment>) : CommentsState
+    data class Error(val msg: String) : CommentsState
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommentsApiApp() {
-    var uiState by remember { mutableStateOf<CommentsUiState>(CommentsUiState.Loading) }
+    var state by remember { mutableStateOf<CommentsState>(CommentsState.Loading) }
     val scope = rememberCoroutineScope()
 
-    fun fetchComments() {
-        uiState = CommentsUiState.Loading
+    fun loadData() {
+        state = CommentsState.Loading
         scope.launch {
             try {
-                val response = RetrofitClient.apiService.getComments()
-                uiState = if (response.isEmpty()) CommentsUiState.Empty else CommentsUiState.Success(response)
+                val data = RetrofitClient.apiService.getComments()
+                state = CommentsState.Success(data)
             } catch (e: Exception) {
-                uiState = CommentsUiState.Error(e.localizedMessage ?: "Failed to fetch comments")
+                state = CommentsState.Error(e.localizedMessage ?: "Error loading comments")
             }
         }
     }
 
     LaunchedEffect(Unit) {
-        fetchComments()
+        loadData()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Comments API (Retrofit)") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (val state = uiState) {
-                is CommentsUiState.Loading -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Loading comments from REST API...")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(text = "Comments REST API App", style = MaterialTheme.typography.headlineSmall)
+
+        when (val curr = state) {
+            is CommentsState.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Loading API Comments...")
+                }
+            }
+            is CommentsState.Error -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(text = curr.msg)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { loadData() }) {
+                        Text("Retry")
                     }
                 }
-
-                is CommentsUiState.Error -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = "Error Loading API",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = state.message, style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { fetchComments() }) {
-                            Text("Retry API Request")
-                        }
-                    }
-                }
-
-                is CommentsUiState.Empty -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No comments found (Empty state)")
-                    }
-                }
-
-                is CommentsUiState.Success -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        item {
-                            Text(
-                                text = "Fetched ${state.comments.size} Comments",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                        items(state.comments, key = { it.id }) { comment ->
-                            CommentRowItem(comment = comment)
+            }
+            is CommentsState.Success -> {
+                Text(text = "Loaded ${curr.list.size} comments")
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(curr.list, key = { it.id }) { comment ->
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(text = comment.name, style = MaterialTheme.typography.titleMedium)
+                            Text(text = "Email: ${comment.email}", style = MaterialTheme.typography.bodySmall)
+                            Text(text = comment.body, style = MaterialTheme.typography.bodyMedium)
+                            HorizontalDivider(modifier = Modifier.padding(top = 8.dp))
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun CommentRowItem(comment: Comment) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = comment.name,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = "Email: ${comment.email}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = comment.body, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

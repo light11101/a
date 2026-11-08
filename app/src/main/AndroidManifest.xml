@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.MyApplication"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,9 +27,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".features.intents.DetailsActivity"
+            android:name="com.student.myapplication.labs.foodordering.OrderSummaryActivity"
             android:exported="false"
-            android:label="Details Activity" />
+            android:label="Order Summary" />
     </application>
 
 </manifest>
