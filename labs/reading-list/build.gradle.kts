@@ -6,9 +6,7 @@ plugins {
 
 android {
     namespace = "com.student.myapplication.labs.readinglist"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
